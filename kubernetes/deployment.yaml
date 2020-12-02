@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: password-manager
+spec:
+  selector:
+    matchLabels:
+      app: password-manager
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: password-manager
+    spec:                  
+      containers: 
+      - name: password-manager
+        image: vijaysamanuri/password-manager:{{ image_tag }}
+        ports:
+        - containerPort: 5000
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "250m"
+          limits:
+            memory: "64Mi"
+            cpu: "500m"
+        readinessProbe:
+          httpGet:
+            path: /favicon.ico
+            port: 5000
+      imagePullSecrets:
+      - name: regcred
+   
