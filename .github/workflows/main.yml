@@ -6,7 +6,10 @@ on:
   push:
     tags:
     - "v*"
- 
+env:
+  NAMESPACE: password-manager
+  DOCKER_REGISTRY: https://index.docker.io/v1/
+  
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
@@ -24,7 +27,7 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}   
-          repository: vijaysamanuri/password-manager
+          repository: ${{ secrets.DOCKER_USERNAME }}/password-manager
           tag_with_ref: true
  
       - name: Get the image tag
@@ -34,9 +37,26 @@ jobs:
       - name: Run vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with: 
-          image-ref: 'docker.io/vijaysamanuri/password-manager:${{ steps.get_tag.outputs.image_tag }}'
+          image-ref: 'docker.io/${{ secrets.DOCKER_USERNAME }}/password-manager:${{ steps.get_tag.outputs.image_tag }}'
           format: 'table'
           exit-code: '1'
           ignore-unfixed: true
           severity: 'CRITICAL,HIGH'
+        
+      - name: update Image Tag
+        run: |
+          sed -i "s/{{ image_tag }}/$IMAGE_TAG/g" kubernetes/deployment.yaml
+        env:
+          IMAGE_TAG: ${{ steps.get_tag.outputs.image_tag }}
           
+      - name: Deploy to kubernetes
+        run: |
+          kubectl create secret docker-registry regcred --docker-server="${DOCKER_REGISTRY}" --docker-username=${DOCKER_USERNAME} --docker-password=${DOCKER_PASSWORD} --docker-email= raju.rama.vijay@gmail.com
+          mkdir -p ~/.kube
+          echo $KUBECONFIG > ~/.kube/config
+          kubectl apply -f kubernetes/ -n $NAMESPACE 
+          rm -f /tmp/kubeconfig
+        env:       
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          KUBECONFIG: ${{ secrets.KUBECONFIG }}
