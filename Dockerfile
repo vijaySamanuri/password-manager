@@ -15,7 +15,7 @@ FROM node:14.13.1-slim
 
 WORKDIR /app
 
-COPY --from=build /app/build .
+COPY --from=build /app/build build/
 
 RUN yarn global add serve
 
