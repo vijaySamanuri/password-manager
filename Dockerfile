@@ -16,7 +16,7 @@ FROM node:14.13.1-slim
 
 WORKDIR /app
 
-COPY --from=build build .
+COPY --from=build /app/build .
 
 EXPOSE 5000
 
