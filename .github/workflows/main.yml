@@ -53,12 +53,12 @@ jobs:
       - name: Deploy to kubernetes
         run: |
           curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
-          chmod +x kubectl && mv kubectl /usr/bin/kubectl
-          kubectl version
-          kubectl create secret docker-registry regcred --docker-server="${DOCKER_REGISTRY}" --docker-username=${DOCKER_USERNAME} --docker-password=${DOCKER_PASSWORD} --docker-email=${DOCKER_EMAIL} -n $NAMESPACE
+          chmod +x kubectl 
+          ./kubectl version
+          ./kubectl create secret docker-registry regcred --docker-server="${DOCKER_REGISTRY}" --docker-username=${DOCKER_USERNAME} --docker-password=${DOCKER_PASSWORD} --docker-email=${DOCKER_EMAIL} -n $NAMESPACE
           mkdir -p ~/.kube
           echo $KUBECONFIG > ~/.kube/config
-          kubectl apply -f kubernetes/ -n $NAMESPACE 
+          ./kubectl apply -f kubernetes/ -n $NAMESPACE 
           rm -f ~/.kube/config
         env:       
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
