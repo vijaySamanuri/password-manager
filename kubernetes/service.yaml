@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: passwordmngr
+spec:
+  type: LoadBalancer
+  selector:
+    app: password-manager
+  ports:
+  - name: http
+    port: 80
+    targetPort: 5000
