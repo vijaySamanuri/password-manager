@@ -12,8 +12,12 @@ RUN yarn run build
 
 RUN yarn global add serve
 
+FROM node:14.13.1-slim
+
+WORKDIR /app
+
+COPY --from=build build .
+
 EXPOSE 5000
 
 CMD ["serve", "-s", "build"]
-
-
