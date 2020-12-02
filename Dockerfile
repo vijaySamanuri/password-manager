@@ -8,5 +8,12 @@ RUN yarn install && yarn cache clean
 
 COPY . /app
 
-CMD ["yarn", "run", "build"]
+RUN yarn run build
+
+RUN yarn global add serve
+
+EXPOSE 5000
+
+CMD ["serve", "-s", "build"]
+
 
