@@ -53,7 +53,7 @@ jobs:
         run: |
           echo "creating kubeconfig"
           echo "$KUBECONFIG" | base64 --decode > /tmp/config
-          export KUBECONFIG=/tmp/confi
+          export KUBECONFIG=/tmp/config
           echo "Creating imagePullSecret in eks cluster for docker hub"
           kubectl create secret docker-registry regcred --docker-server="${DOCKER_REGISTRY}" --docker-username=${DOCKER_USERNAME} --docker-password=${{ secrets.DOCKER_PASSWORD }} --docker-email=${DOCKER_EMAIL} -n ${NAMESPACE} --dry-run=client -o yaml > /tmp/imagePullSecret.yaml
           kubectl apply -f /tmp/imagePullSecret.yaml
