@@ -82,4 +82,4 @@ jobs:
         env:
           KUBE_CONFIG_DATA: ${{ secrets.KUBECONFIG }}
         with:
-          args: '"rollout status deployment/password-manager"'  
+          args: '"rollout status deployment/password-manager -n ${{ env.NAMESPACE }}"'  
