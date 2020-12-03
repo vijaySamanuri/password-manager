@@ -50,18 +50,40 @@ jobs:
         env:
           IMAGE_TAG: ${{ steps.get_tag.outputs.image_tag }}
           
-      - name: Deploy to kubernetes
-        run: |
-          curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
-          chmod +x kubectl 
-          ./kubectl version
-          ./kubectl create secret docker-registry regcred --docker-server="${DOCKER_REGISTRY}" --docker-username=${DOCKER_USERNAME} --docker-password=${DOCKER_PASSWORD} --docker-email=${DOCKER_EMAIL} -n $NAMESPACE
-          echo "preserving kubeconfig"
-          mkdir -p ~/.kube
-          echo $KUBECONFIG > ~/.kube/config
-          ./kubectl apply -f kubernetes/ -n $NAMESPACE 
-          rm -f ~/.kube/config
-        env:       
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-          KUBECONFIG: ${{ secrets.KUBECONFIG }}
+      - name: create imagePullSecret in eks cluster
+        uses: steebchen/kubectl@master
+        env:
+          KUBE_CONFIG_DATA: ${{ secrets.KUBECONFIG }}
+        with:
+          args: create secret docker-registry regcred --docker-server="${{ env.DOCKER_REGISTRY }}" --docker-username=${{ secrets.DOCKER_USERNAME }} --docker-password=${{ secrets.DOCKER_PASSWORD }} --docker-email=${{ env.DOCKER_EMAIL }} -n ${{ env.NAMESPACE }}
+          
+      - name: deploy to eks cluster
+        uses: steebchen/kubectl@master
+        env:
+          KUBE_CONFIG_DATA: ${{ secrets.KUBECONFIG }}
+        with:
+          args: apply -f kubernetes/ -n ${{ env.NAMESPACE }}
+        
+      - name: verify deployment
+        uses: steebchen/kubectl@master
+        env:
+          KUBE_CONFIG_DATA: ${{ secrets.KUBECONFIG }}
+          KUBECTL_VERSION: "1.19"
+        with:
+          args: '"rollout status deployment/password-manager"'  
+          
+   #   - name: Deploy to kubernetes
+   #     run: |
+  #        curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
+  #        chmod +x kubectl 
+  #        ./kubectl version
+  #        ./kubectl create secret docker-registry regcred --docker-server="${DOCKER_REGISTRY}" --docker-username=${DOCKER_USERNAME} --docker-password=${DOCKER_PASSWORD} --docker-email=${DOCKER_EMAIL} -n $NAMESPACE
+  #        echo "preserving kubeconfig"
+  #        mkdir -p ~/.kube
+ #       echo $KUBECONFIG > ~/.kube/config
+  #        ./kubectl apply -f kubernetes/ -n $NAMESPACE 
+  #        rm -f ~/.kube/config
+  #      env:       
+ #        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+ #         DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+   #       KUBECONFIG: ${{ secrets.KUBECONFIG }}
