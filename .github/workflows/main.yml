@@ -43,22 +43,18 @@ jobs:
           ignore-unfixed: true
           severity: 'CRITICAL,HIGH'
         
-      - name: update Image Tag in deploy artifact
+      - name: update Image Tag in k8s deploy artifact
         run: |
           sed -i "s/{{ image_tag }}/$IMAGE_TAG/g" kubernetes/deployment.yaml
         env:
           IMAGE_TAG: ${{ steps.get_tag.outputs.image_tag }}
           
-      - name: test kubectl version
-        run: |
-          kubectl version
-          echo "kubectl is present" 
-          
       - name: create imagePullSecret in eks cluster
         run: |
           echo "creating kubeconfig"
-          mkdir -p ~/.kube
-          echo $KUBECONFIG > ~/.kube/config     
+          echo "$KUBECONFIG" | base64 --decode > /tmp/config
+          export KUBECONFIG=/tmp/confi
+          echo "Creating imagePullSecret in eks cluster for docker hub"
           kubectl create secret docker-registry regcred --docker-server="${DOCKER_REGISTRY}" --docker-username=${DOCKER_USERNAME} --docker-password=${{ secrets.DOCKER_PASSWORD }} --docker-email=${DOCKER_EMAIL} -n ${NAMESPACE} --dry-run=client -o yaml > /tmp/imagePullSecret.yaml
           kubectl apply -f /tmp/imagePullSecret.yaml
           rm -f /tmp/imagePullSecret.yaml
