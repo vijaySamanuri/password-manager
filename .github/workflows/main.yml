@@ -1,4 +1,4 @@
-name: CI
+name: CICD
 
 # Controls when the action will run. Triggers the workflow on push or pull request
 # events but only for the master branch
@@ -14,7 +14,7 @@ env:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
-  build:
+  buildanddeploy:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
@@ -22,7 +22,6 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
-      # TODO make use of build spec and do it
       - name: Build and push Docker images
         uses: docker/build-push-action@v1.1.1
         with:
@@ -34,7 +33,7 @@ jobs:
       - name: Get the image tag
         id: get_tag
         run: echo "::set-output name=image_tag::${GITHUB_REF##*/}" 
-        
+  
       - name: Run vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with: 
@@ -44,18 +43,29 @@ jobs:
           ignore-unfixed: true
           severity: 'CRITICAL,HIGH'
         
-      - name: update Image Tag
+      - name: update Image Tag in deploy artifact
         run: |
           sed -i "s/{{ image_tag }}/$IMAGE_TAG/g" kubernetes/deployment.yaml
         env:
           IMAGE_TAG: ${{ steps.get_tag.outputs.image_tag }}
           
       - name: create imagePullSecret in eks cluster
-        uses: steebchen/kubectl@master
-        env:
-          KUBE_CONFIG_DATA: ${{ secrets.KUBECONFIG }}
-        with:
-          args: create secret docker-registry regcred --docker-server="${{ env.DOCKER_REGISTRY }}" --docker-username=${{ secrets.DOCKER_USERNAME }} --docker-password=${{ secrets.DOCKER_PASSWORD }} --docker-email=${{ env.DOCKER_EMAIL }} -n ${{ env.NAMESPACE }}
+        run: |
+          mkdir -p ~/.kube
+          echo $KUBECONFIG > ~/.kube/config     
+          kubectl create secret docker-registry regcred --docker-server="${DOCKER_REGISTRY}" --docker-username=${DOCKER_USERNAME} --docker-password=${{ secrets.DOCKER_PASSWORD }} --docker-email=${DOCKER_EMAIL} -n ${NAMESPACE} --dry-run=client -o yaml > /tmp/imagePullSecret.yaml
+          kubectl apply -f /tmp/imagePullSecret.yaml
+          rm -f /tmp/imagePullSecret.yaml
+        env:       
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          KUBECONFIG: ${{ secrets.KUBECONFIG }}
+            
+#      - uses: steebchen/kubectl@master
+#        env:
+#          KUBE_CONFIG_DATA: ${{ secrets.KUBECONFIG }}
+#        with:
+#          args: create secret docker-registry regcred --docker-server="${{ env.DOCKER_REGISTRY }}" --docker-username=${{ secrets.DOCKER_USERNAME }} --docker-password=${{ secrets.DOCKER_PASSWORD }} --docker-email=${{ env.DOCKER_EMAIL }} -n ${{ env.NAMESPACE }} || true
           
       - name: deploy to eks cluster
         uses: steebchen/kubectl@master
