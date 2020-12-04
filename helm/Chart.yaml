@@ -1,0 +1,16 @@
+apiVersion: v2
+name: password-manager
+description: Helm Chart for password-manager application
+
+maintainers:
+  - name: vijaysamanuri
+    email: raju.rama.vijay@gmail.com
+
+type: application
+
+version: 0.1.0
+
+appVersion: v0.4.1
+
+sources:
+  - https://github.com/vijaySamanuri/password-manager
