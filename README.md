@@ -45,7 +45,7 @@ In this project, I am trying to make a password generator in which a user can cr
     git add .
     git commit -m "some change"
     git tag v0.5.0
-    git push --atomic origin master v0.4.0
+    git push --atomic origin master v0.5.0
   ```
   > Note: we are using this tag for image tagging
   
