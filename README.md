@@ -1,7 +1,7 @@
 ## Table of Contents
 
-- [About](#password-generator-app)
-- [Deploy to eks using Github Workflow](#deploy-to-eks)
+- [About this Application](#password-generator-app)
+- [Deploy to eks cluster using Github Workflow](#deploy-to-eks)
 
 ### Password Generator App
 
@@ -34,14 +34,14 @@ In this project, I am trying to make a password generator in which a user can cr
  * deploy the image to EKS cluster in `password-manager` namespace.
  * verify the deployment
  
- This workflow automatically triggers when you merge a tagged commit (tag starting with v*) in master branch
+ This workflow automatically triggers when you merge a tagged commit (tag starting with `v*`) in master branch
  
  for example:
  
  ```shell
     git clone https://github.com/vijaySamanuri/password-manager
     cd password-manager
-    <make some change>
+    <make some file changes>
     git add .
     git commit -m "some change"
     git tag v0.5.0
@@ -108,5 +108,16 @@ In this project, I am trying to make a password generator in which a user can cr
    ```
    or you can create a service account with least privileges and configure the kubeconfig file.
 
+
+#### Access the Deployed Application
+
+```shell
+   kubectl get svc -n password-manager
+```
+and access the external-ip in browser.
+
+Make some source code changes, push a tagged commit and refresh the browser.
+
+Happy Deploying :)
    
   
