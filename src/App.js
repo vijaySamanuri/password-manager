@@ -18,7 +18,7 @@ toast.configure();
 function App() {
   const [password, setPassword] = useState("");
   // const [copyBtnText, setCopyBtnText] = useState("COPY");
-  const [passwordLength, setPasswordLength] = useState(20);
+  const [passwordLength, setPasswordLength] = useState(10);
   const [includeUppercase, setIncludeUppercase] = useState(true);
   const [includeLowercase, setIncludeLowercase] = useState(true);
   const [includeNumbers, setIncludeNumbers] = useState(true);
@@ -143,7 +143,7 @@ function App() {
         </div>
 
         <div className="form-group">
-          <label htmlFor="password-length">Password length</label>
+          <label htmlFor="password-length">Password Length</label>
           <input
             name="password-length"
             id="password-length"
